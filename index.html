@@ -9,16 +9,26 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
   <link href="style.css" rel="stylesheet">
+  <style>
+    body{margin:0;background:#0b0b0d;color:#e9ecf5;font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    .wrap{max-width:860px;margin:24px auto;padding:16px}
+    .card{background:#121319;border:1px solid #1d2030;border-radius:16px;padding:16px}
+    .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
+    .uploader{position:relative;display:inline-block}
+    .uploader input{position:absolute;inset:0;opacity:0;cursor:pointer}
+    .uploader span{display:inline-block;padding:10px 14px;border:1px dashed #2a2f49;border-radius:999px;color:#97a0b7}
+    button{padding:10px 16px;border:0;border-radius:999px;background:#2a335a;color:#fff;cursor:pointer}
+    .status{margin:10px 0;color:#97a0b7}
+    video{width:100%;margin-top:12px;border-radius:12px;border:1px solid #22283f;background:#000}
+    video::cue{font-family:Montserrat,sans-serif;font-weight:900;text-transform:uppercase;font-size:3.6vw;color:#fff;text-shadow:0 0 8px rgba(0,0,0,.8)}
+    label.demo{color:#97a0b7;user-select:none}
+  </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">∞ Infinie & gratuit</div>
-  </header>
-
   <main class="wrap">
     <section class="card">
       <h1>Sous-titres automatiques</h1>
-      <p class="sub">Importe ta vidéo, clique <strong>Générer</strong>, les sous-titres s'affichent. (Fonctionne sur Mac/Windows/Linux/iOS/Android)</p>
+      <p>Sélectionne un <strong>fichier</strong> (pas un dossier) puis clique <strong>Générer</strong>. Le bouton s’active après la sélection.</p>
 
       <div class="row">
         <label class="uploader">
@@ -31,21 +41,11 @@
       </div>
 
       <div id="status" class="status">Prêt.</div>
-
       <video id="player" controls playsinline></video>
-    </section>
-
-    <section class="tips card">
-      <h2>Conseils rapides</h2>
-      <ul>
-        <li>Format recommandé : .mp4 (h.264) ou .mov pour les vidéos, .mp3/.wav pour l’audio.</li>
-        <li>En <strong>Mode démo</strong>, on affiche un exemple de sous-titres pour tester l’interface sans clé API.</li>
-      </ul>
     </section>
   </main>
 
-  <footer class="foot">100% client + backend serverless Netlify (clé API sécurisée)</footer>
-
-  <script src="js/app.js" type="module"></script>
+  <!-- note: pas "type=module" pour éviter un souci de vieux Safari -->
+  <script src="js/app.js?v=4"></script>
 </body>
 </html>
