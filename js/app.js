@@ -6,17 +6,9 @@
   const $demo   = document.getElementById('demo');
 
   function setStatus(msg){ if($status) $status.textContent = msg; console.log('[STATUT]', msg); }
-  window.onerror = (m,s,l,c,e)=>{ setStatus('Erreur JS: '+(m||e?.message||'inconnue')); };
-
-  // Vérifie que le HTML contient bien les bons IDs
-  const missing = ['file','go','status','player','demo'].filter(id => !document.getElementById(id));
-  if (missing.length) {
-    alert('IDs manquants dans index.html: '+missing.join(', '));
-    setStatus('IDs manquants: '+missing.join(', '));
-    return;
-  }
 
   let chosen = null;
+  let ffmpeg = null;
 
   $file.addEventListener('change', (e) => {
     const files = e.target.files;
@@ -29,12 +21,55 @@
     } else {
       $player.removeAttribute('src');
     }
-    setStatus(chosen ? `Fichier sélectionné : ${chosen.name}` : 'Aucun fichier sélectionné.');
+    setStatus(chosen ? `Fichier sélectionné : ${chosen.name} (${(chosen.size/1024/1024).toFixed(1)} Mo)` : 'Aucun fichier sélectionné.');
   });
+
+  async function ensureFFmpeg() {
+    if (ffmpeg) return;
+    if (!window.FFmpeg) throw new Error('FFmpeg non chargé');
+    const { createFFmpeg, fetchFile } = window.FFmpeg;
+    ffmpeg = createFFmpeg({
+      log: true,
+      corePath: "https://unpkg.com/@ffmpeg/core@0.12.6/dist/ffmpeg-core.js",
+    });
+    setStatus('Chargement du moteur (1ère fois, ~20 Mo)…');
+    await ffmpeg.load();
+    setStatus('Moteur prêt ✅');
+  }
+
+  // Essaie plusieurs bitrates pour rester < ~5.5 Mo (limite Functions ~6 Mo)
+  async function transcodeToSmallMp3(file) {
+    await ensureFFmpeg();
+    const { fetchFile } = window.FFmpeg;
+
+    // Écris la vidéo source dans le FS virtuel
+    ffmpeg.FS('writeFile', 'in', await fetchFile(file));
+
+    const bitrates = [64, 48, 32, 24, 16]; // kbps
+    for (const br of bitrates) {
+      setStatus(`Compression audio… (${br} kb/s, mono 16 kHz)`);
+      try {
+        // Nettoie une éventuelle sortie précédente
+        try { ffmpeg.FS('unlink', 'out.mp3'); } catch(e){}
+        // -vn = no video, -ac 1 = mono, -ar 16000 = 16 kHz, -b:a = bitrate audio
+        await ffmpeg.run('-i', 'in', '-vn', '-ac', '1', '-ar', '16000', '-b:a', `${br}k`, 'out.mp3');
+        const data = ffmpeg.FS('readFile', 'out.mp3');
+        const blob = new Blob([data.buffer], { type: 'audio/mpeg' });
+        const sizeMB = blob.size/1024/1024;
+        setStatus(`Audio compressé: ${sizeMB.toFixed(2)} Mo`);
+        if (sizeMB <= 5.5) return blob; // OK → on envoie
+      } catch (e) {
+        console.warn('Échec tentative bitrate', br, e);
+      }
+    }
+    // Dernier recours : on renvoie quand même le plus petit obtenu
+    const data = ffmpeg.FS('readFile', 'out.mp3');
+    return new Blob([data.buffer], { type: 'audio/mpeg' });
+  }
 
   $go.addEventListener('click', async () => {
     if (!chosen) {
-      setStatus('Choisis un fichier vidéo/audio avant de cliquer sur Générer.');
+      setStatus('Choisis un fichier avant de cliquer sur Générer.');
       return;
     }
 
@@ -56,19 +91,24 @@ GÉNÉRONS DES SOUS-TITRES !`;
         return;
       }
 
-      setStatus('Transcription en cours…');
+      // *** NOUVEAU : on envoie l'AUDIO compressé, pas la vidéo ***
+      const t0 = Date.now();
+      const audioBlob = await transcodeToSmallMp3(chosen);
+      const after = ((Date.now()-t0)/1000).toFixed(1);
+      setStatus(`Audio prêt (${(audioBlob.size/1024/1024).toFixed(2)} Mo). Envoi… (prétraitement ${after}s)`);
+
       const fd = new FormData();
-      fd.append('file', chosen);
+      fd.append('file', audioBlob, 'audio.mp3');
       fd.append('model', 'whisper-1');
       fd.append('response_format', 'srt');
+      // fd.append('language', 'fr'); // décommente si tu veux forcer FR
 
       const res = await fetch('/.netlify/functions/transcribe', { method: 'POST', body: fd });
       const text = await res.text();
 
       if (!res.ok) {
-        if (text.includes('Missing OPENAI_API_KEY')) {
-          throw new Error('Clé absente côté Netlify. Active “Mode démo” OU ajoute OPENAI_API_KEY dans Site settings → Environment variables, puis redeploy.');
-        }
+        if (text.includes('Missing OPENAI_API_KEY')) throw new Error('Clé absente côté Netlify (ajoute OPENAI_API_KEY, puis redeploy).');
+        if (/payload|too large|413/i.test(text)) throw new Error('Fichier trop lourd côté function. Réessaie avec une vidéo plus courte, ou laisse la compression réessayer.');
         throw new Error(text || 'Erreur inconnue de la fonction.');
       }
 
@@ -76,8 +116,8 @@ GÉNÉRONS DES SOUS-TITRES !`;
       setStatus('Sous-titres prêts ✅');
     } catch (err) {
       console.error(err);
-      setStatus('Erreur : ' + (err?.message || err));
       alert('Erreur : ' + (err?.message || err));
+      setStatus('Erreur : ' + (err?.message || err));
     }
   });
 
