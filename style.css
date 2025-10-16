@@ -1,0 +1,31 @@
+:root{
+  --bg:#0b0b0d; --panel:#121319; --text:#e9ecf5; --muted:#97a0b7; --accent:#8ab4ff;
+  --accent2:#e8e337; --radius:18px; --border:#1d2030;
+}
+*{box-sizing:border-box} html,body{height:100%}
+body{margin:0;background:radial-gradient(1200px 600px at 30% -10%, #0f162d 0%, #0b0b0d 35%, #0b0b0d 100%);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+.topbar{padding:14px 18px;border-bottom:1px solid var(--border);backdrop-filter:saturate(1.2) blur(6px);position:sticky;top:0}
+.brand{font-weight:700;letter-spacing:.2px}
+.wrap{max-width:980px;margin:18px auto;padding:0 16px}
+.card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:18px;margin:14px 0;box-shadow:0 10px 40px rgba(0,0,0,.25)}
+h1{margin:0 0 6px} .sub{color:var(--muted);margin:0 0 10px}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.uploader{display:inline-block;position:relative}
+.uploader input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.uploader span{display:inline-block;padding:10px 14px;border:1px dashed #2a2f49;border-radius:999px;color:var(--muted)}
+button#go{padding:10px 16px;border:0;border-radius:999px;background:#2a335a;color:#fff;cursor:pointer}
+.demo{color:var(--muted);user-select:none}
+.status{margin:10px 0;color:var(--muted)}
+video#player{width:100%;margin-top:12px;border-radius:12px;border:1px solid #22283f;background:#000}
+
+/* Sous-titres VTT façon Hormozi light */
+video::cue {
+  font-family: 'Montserrat', sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+  font-size: 3.6vw;
+  color: #fff;
+  text-shadow: 0 0 8px rgba(0,0,0,.8);
+}
+
+.foot{opacity:.6;text-align:center;padding:18px;color:var(--muted)}
