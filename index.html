@@ -84,11 +84,12 @@
     </section>
   </main>
 
-  <!-- FFmpeg.wasm (pour compresser l’audio côté navigateur) -->
-  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+<!-- FFmpeg.wasm UMD -->
+<script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
 
-  <!-- Ton script applicatif (version avec compression et envoi audio) -->
-  <script src="js/app.js?v=10"></script>
+<!-- Ton app (pas type=module) -->
+<script src="js/app.js?v=12"></script>
+
 </body>
 </html>
 
