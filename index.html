@@ -5,30 +5,60 @@
   <meta name="viewport" content="width=device-width, initial-scale=1"/>
   <meta name="color-scheme" content="dark"/>
   <title>Infinie — Sous-titres automatiques</title>
+
+  <!-- Fonts -->
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;700&family=Montserrat:wght@900&display=swap" rel="stylesheet">
-  <link href="style.css" rel="stylesheet">
+
+  <!-- Styles de base (tu peux laisser aussi ton style.css si tu veux) -->
   <style>
-    body{margin:0;background:#0b0b0d;color:#e9ecf5;font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-    .wrap{max-width:860px;margin:24px auto;padding:16px}
-    .card{background:#121319;border:1px solid #1d2030;border-radius:16px;padding:16px}
+    :root{
+      --bg:#0b0b0d; --panel:#121319; --text:#e9ecf5; --muted:#97a0b7; --border:#1d2030;
+      --brand:#8ab4ff; --radius:16px;
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{margin:0;background:radial-gradient(1200px 600px at 30% -10%, #0f162d 0%, #0b0b0d 35%, #0b0b0d 100%);color:var(--text);font:15px/1.5 Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
+    header{padding:14px 18px;border-bottom:1px solid var(--border)}
+    .brand{font-weight:700;letter-spacing:.2px}
+    main{max-width:920px;margin:22px auto;padding:0 16px}
+    .card{background:var(--panel);border:1px solid var(--border);border-radius:var(--radius);padding:16px}
+    h1{margin:0 0 8px}
+    p.sub{margin:0 0 12px;color:var(--muted)}
     .row{display:flex;gap:10px;flex-wrap:wrap;align-items:center}
     .uploader{position:relative;display:inline-block}
     .uploader input{position:absolute;inset:0;opacity:0;cursor:pointer}
-    .uploader span{display:inline-block;padding:10px 14px;border:1px dashed #2a2f49;border-radius:999px;color:#97a0b7}
+    .uploader span{display:inline-block;padding:10px 14px;border:1px dashed #2a2f49;border-radius:999px;color:var(--muted)}
     button{padding:10px 16px;border:0;border-radius:999px;background:#2a335a;color:#fff;cursor:pointer}
-    .status{margin:10px 0;color:#97a0b7}
+    button[disabled]{opacity:.5;cursor:not-allowed}
+    label.demo{color:var(--muted);user-select:none}
+    .status{margin:10px 0;color:var(--muted)}
     video{width:100%;margin-top:12px;border-radius:12px;border:1px solid #22283f;background:#000}
-    video::cue{font-family:Montserrat,sans-serif;font-weight:900;text-transform:uppercase;font-size:3.6vw;color:#fff;text-shadow:0 0 8px rgba(0,0,0,.8)}
-    label.demo{color:#97a0b7;user-select:none}
+
+    /* Rendu VTT façon “Hormozi light” */
+    video::cue{
+      font-family:Montserrat,sans-serif;
+      font-weight:900;
+      text-transform:uppercase;
+      font-size:3.6vw;
+      color:#fff;
+      text-shadow:0 0 8px rgba(0,0,0,.85);
+    }
+
+    .tips{margin-top:12px}
+    .tips ul{margin:8px 0 0 18px;color:var(--muted)}
   </style>
 </head>
 <body>
-  <main class="wrap">
+  <header>
+    <div class="brand">∞ Infinie & gratuit</div>
+  </header>
+
+  <main>
     <section class="card">
       <h1>Sous-titres automatiques</h1>
-      <p>Sélectionne un <strong>fichier</strong> (pas un dossier) puis clique <strong>Générer</strong>. Le bouton s’active après la sélection.</p>
+      <p class="sub">Sélectionne un <strong>fichier</strong> (pas un dossier) puis clique <strong>Générer</strong>. La vidéo peut faire jusqu’à <strong>100&nbsp;Mo</strong> : l’audio sera compressé en local avant envoi.</p>
 
       <div class="row">
         <label class="uploader">
@@ -43,9 +73,22 @@
       <div id="status" class="status">Prêt.</div>
       <video id="player" controls playsinline></video>
     </section>
+
+    <section class="card tips">
+      <h2 style="margin:0 0 6px">Conseils rapides</h2>
+      <ul>
+        <li>Pour tester vite, coche <em>Mode démo</em> (aucune clé requise).</li>
+        <li>Pour la vraie transcription, ajoute <code>OPENAI_API_KEY</code> dans Netlify → Environment variables, puis redeploy.</li>
+        <li>Les grosses vidéos (jusqu’à 100&nbsp;Mo) sont acceptées : on n’envoie au serveur que l’<strong>audio compressé</strong> (quelques Mo).</li>
+      </ul>
+    </section>
   </main>
 
-  <!-- note: pas "type=module" pour éviter un souci de vieux Safari -->
-  <script src="js/app.js?v=4"></script>
+  <!-- FFmpeg.wasm (pour compresser l’audio côté navigateur) -->
+  <script src="https://unpkg.com/@ffmpeg/ffmpeg@0.12.6/dist/ffmpeg.min.js"></script>
+
+  <!-- Ton script applicatif (version avec compression et envoi audio) -->
+  <script src="js/app.js?v=10"></script>
 </body>
 </html>
+
